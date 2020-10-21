@@ -1,0 +1,83 @@
+set term tikz standalone color font ",10"
+#header "\\usepackage{times}"
+set format xy "$%g$"
+set output "fig.tex"
+set multiplot
+set size ratio 0.618
+set origin 0,0
+set size 1,1
+
+set key spacing 1.2 font ",8"
+
+set format x "%.0f"
+set format y "%.0g"
+
+set xlabel "days from 24/02/2020"
+#set ylabel ""
+
+set logscale y
+
+#xr0=0.1
+#xr1=200
+
+#yr0=0.35
+#yr1=1.00
+set xtics 20.0
+
+set tics front
+
+#set xrange [0:]
+#set yrange [yr0:yr1]
+
+set style line  1 lc rgb '#bf0000' lt 1 lw 2 ps 1.4 pt 7  # red, full circles
+set style line  2 lc rgb '#0000bf' lt 1 lw 2 ps 1.4 pt 7  # blue, full circles
+set style line  3 lc rgb '#bbbbbb' lt 1 lw 2 ps 1.4 pt 7  # grey, full circles
+set style line  4 lc rgb '#ffa07a' lt 1 lw 2 ps 1.4 pt 7  # light salmon, full circles
+set style line  5 lc rgb '#000000' lt 1 lw 2 ps 1.4 pt 7  # black, full circles
+
+set style line 11 lc rgb '#bf0000' lt 1 lw 2 ps 1.4 pt 6  # red, open circles
+set style line 12 lc rgb '#0000bf' lt 1 lw 2 ps 1.4 pt 6  # blue, open circles
+set style line 13 lc rgb '#bbbbbb' lt 1 lw 2 ps 1.4 pt 6  # grey, open circles
+set style line 14 lc rgb '#ffa07a' lt 1 lw 2 ps 1.4 pt 6  # light salmon, open circles
+set style line 15 lc rgb '#000000' lt 1 lw 2 ps 1.4 pt 6  # black, open circles
+
+set style line 21 lc rgb '#000000' lt 1 lw 2 ps 1.4 pt 6 dashtype 2 # black, line, dashed
+set style line 22 lc rgb '#000000' lt 1 lw 2 ps 1.4 pt 6 dashtype 4 # black, line, dotted
+set style line 23 lc rgb '#000000' lt 1 lw 2 ps 1.4 pt 6 dt 9 # black, line, dashdotted
+
+set style line 1 lt 1 lw 2  pt 7 ps 0.8
+set style line 2 lt 2 lw 2  pt 7 ps 0.8
+
+
+DATA = './data.dat'
+
+f(x) = @A*exp(x/@B) + @C
+err(x) = sqrt( (@sigmaA**2)*(exp(x/@B))**2 + (@sigmaB**2)*(x*@A/(@B**2)*exp(x/@B))**2 + @sigmaC**2 + 2*@rhoAC*@sigmaA*@sigmaC*exp(x/@B) - 2*@rhoAB*@sigmaA*@sigmaB*exp(2*x/@B)/(@B**2)*@A*x - 2*@rhoBC*@sigmaB*@sigmaC*@A*x*exp(x/@B)/(@B**2) )  
+
+set style fill solid 0.5 noborder
+
+filter(x,min) = (x >= min) ? x : 1/0
+#plot DATA u 1:2:3 ls 1 w err t 'infected', \
+#  '+' u (filter($1, 215)):(f($1)+err($1)):(f($1)-err($1)) w filledcu fs transparent solid 0.7 ls 3 t "$N_0 \\exp(t/t_0) + N_1$"
+	
+plot DATA u 1:2:3 ls 1 w err t 'infected', \
+  [215:250] f(x) ls 3 t "$N_0 \\exp(t/t_0) + N_1$"
+
+unset key
+set ytics font ", 6"
+set xtics font ", 6"
+set origin 0.15, 0.2
+set size 0.45, 0.35
+set xrange [210:250]
+#set yrange [20000:500000]
+set xtics 5
+set xlabel ''
+replot
+unset multiplot
+
+# compile and exit
+
+set output
+system('pdflatex fig.tex && rm fig.aux fig.log fig.tex')
+system('pdf2ps fig.pdf && ps2eps -f fig.ps && rm fig.ps')
+#exit

@@ -1,0 +1,14 @@
+set fit quiet
+#set logscale y
+b=1
+a=1
+f(x) = a*exp(x/b) + c
+DATA="./data.dat"
+fit [215:] log(f(x)) DATA using ($1):(log($2)):($3/$2) yerrors via a, b, c
+
+#p DATA using 1:2:3 w error t ''
+#rep f(x) 
+#set term png
+#set xrange [215:]
+#set output "output.png"
+#rep
